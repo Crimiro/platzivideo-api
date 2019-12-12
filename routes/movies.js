@@ -48,6 +48,19 @@ function moviesAPI(app) {
     const { movieId } = req.params;
     const { body: movie } = req;
     try {
+      const replacedMovie = await moviesService.replaceMovie({ movieId, movie })
+      res.status(200).json({
+        data: replacedMovie,
+        message: 'Movies Replaced'
+      })
+    } catch(err) {
+      next(err);
+    }
+  });
+  router.patch('/:movieId', async function(req, res, next) {
+    const { movieId } = req.params;
+    const { body: movie } = req;
+    try {
       const updatedMovieId = await moviesService.updateMovie({ movieId, movie })
       res.status(200).json({
         data: updatedMovieId,
@@ -70,7 +83,5 @@ function moviesAPI(app) {
     }
   });
 }
-
-// Implementar el método PATCH en las películas
 
 module.exports = moviesAPI;
