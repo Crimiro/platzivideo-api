@@ -10,3 +10,13 @@ describe.only('Utils- buildMessage', function() {
     })
   })
 })
+
+describe.only('When receives an entity and an action ans is a list', function() {
+  describe('Should return the respective message with the entity in plural', function() {
+    it('Should return the respective message', function() {
+      const result = buildMessage('movie', 'list');
+      const expect = 'movies listed';
+      assert.strictEqual(result, expect);
+    })
+  })
+})
