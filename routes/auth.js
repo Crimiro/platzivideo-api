@@ -9,13 +9,16 @@ require('../utils/auth/strategies/basic');
 const validationHandler = require('../utils/middleware/validationHandler');
 const { createUserSchema } = require('../utils/schemas/users');
 
+const THIRTY_DAYS_IN_SEC = 2592000;
+const TWO_HOURS_IN_SEC = 7200;
+
 function authAPI(app) {
   const router = express.Router();
   app.use('/api/auth', router);
   const apiKeysService = new ApiKeysService();
   const usersService = new UsersService();
   router.post('/sign-in', async function(req, res, next) {
-    const { apiKeyToken } = req.body;
+    const { apiKeyToken, rememberMe } = req.body;
     if(!apiKeyToken) {
       next(boom.unauthorized('apiKeyToken is required'));
     }
@@ -24,16 +27,11 @@ function authAPI(app) {
         if(error || !user) {
           next(boom.unauthorized());
         }
-        console.log("********************************************************************************************************************");
-        console.log(error);
-        console.log(user);
-        console.log("********************************************************************************************************************");
         req.login(user, { session: false }, async function(error) {
           if(error) {
             next(error);
           }
           const apiKey = await apiKeysService.getAPIKey({ token: apiKeyToken});
-          console.log(apiKey);
           if(!apiKey) {
             next(boom.unauthorized());
           }
@@ -45,7 +43,7 @@ function authAPI(app) {
             scopes: apiKey.scopes
           }
           const token = jwt.sign(payload, config.authJWTSecret, {
-            expiresIn: '15m'
+            expiresIn: rememberMe ? THIRTY_DAYS_IN_SEC : TWO_HOURS_IN_SEC
           });
           return res.status(200).json({token, user: { id, name, email }})
         })
